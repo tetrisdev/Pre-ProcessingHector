@@ -1,0 +1,27 @@
+scan_filter_chain:
+- name: box
+  type: laser_filters/LaserScanBoxFilter
+  params:
+    box_frame: opti_markers
+    min_x: -1.0
+    max_x: 1.0
+    min_y: -1.0
+    max_y: 1.0
+    min_z: -1.0
+    max_z: 1.0
+
+- name: "speckle"
+  type: "laser_filters/LaserScanSpeckleFilter"
+  params:
+    filter_type: 1  # Options: "radius", "distance"
+    max_range: 50.0        # Maximum range to take into consiferation
+    max_range_difference: 0.2    # Radius in which to search for neighbors
+    filter_window: 5      # Minimum number of neighbors to not be considered speckle
+
+- name: shadows
+  type: laser_filters/ScanShadowsFilter
+  params:
+    min_angle: 10
+    max_angle: 170
+    neighbors: 5
+    window: 1

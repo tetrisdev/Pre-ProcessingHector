@@ -1,0 +1,89 @@
+<launch>
+    <!-- Convert PointCloud2 from /velodyne_points to /scan for Hector SLAM -->
+    <node name="pointcloud_to_laserscan" pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node">
+        <remap from="cloud_in" to="/os0_cloud_node/points"/>
+        <remap from="scan" to="/os0_scan"/>
+            <rosparam>
+        transform_tolerance: 0.05
+        min_height: 0.0
+        max_height: 1.0
+
+        scan_time: 0.1
+        range_min: 0.45
+        range_max: 50.0
+        use_inf: true
+
+        # Concurrency level, affects number of pointclouds queued for processing and number of threads used
+        # 0 : Detect number of cores
+        # 1 : Single threaded
+        # 2->inf : Parallelism level
+        concurrency_level: 0
+    </rosparam>
+    </node>
+    <node pkg="rostopic" type="rostopic" name="set_initial_pose" args='pub -1 /initialpose geometry_msgs/PoseWithCovarianceStamped "{header: {stamp: now, frame_id: "map"}, pose: {pose: {position: {x: -0.1421, y: 0.7486, z: 0.0}, orientation: {x: -0.0007914263405837119, y: 0.006493659690022469, z: 0.006362137384712696, w: 0.9}}, covariance: [0.000000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.000000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.000000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.000000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.000000001, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.000000001, 0.0]}}"' />
+        <!-- Load the URDF into the ROS Parameter Server -->
+    <param name="robot_description" textfile="$(find launchfile_pkg)/urdf/sensors_suite_os0.urdf" />
+
+    <!-- The node which applies the filter chain -->
+    <node type="scan_to_scan_filter_chain" pkg="laser_filters" name="scan_filter_chain" output="screen">
+        <rosparam command="load" file="$(find launchfile_pkg)/config/speckle_filter.yaml" />
+        <remap from="scan" to="/os0_scan"/>
+        <remap from="scan_filtered" to="/scan_filtered"/>
+    </node>
+    <!-- Start the robot state publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+        <param name="publish_frequency" type="double" value="50.0" />
+        <param name="tf_prefix" type="string" value="" />
+    </node>
+
+    <param name="/use_sim_time" value="true"/>
+    <!-- Start Hector SLAM node -->
+    <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen">
+    
+    <!-- Frame names -->
+    <param name="map_frame" value="map" />
+    <param name="base_frame" value="opti_markers" />
+    <param name="odom_frame" value="opti_markers" />
+    
+    <!-- Tf use -->
+    <param name="use_tf_scan_transformation" value="true"/>
+    <param name="use_tf_pose_start_estimate" value="false"/>
+    <param name="pub_map_odom_transform" value="true"/>
+    
+    <!-- Map size / start point -->
+    <param name="map_resolution" value="0.05"/>
+    <param name="map_size" value="2048"/>
+    <param name="map_start_x" value="0.5"/>
+    <param name="map_start_y" value="0.5" />
+    <param name="map_multi_res_levels" value="3" />
+    
+    <!-- Map update parameters -->
+    <param name="update_factor_free" value="0.4"/>
+    <param name="update_factor_occupied" value="0.8" />    
+    <param name="map_update_distance_thresh" value="0.2"/>
+    <param name="map_update_angle_thresh" value="0.05" />
+    <param name="laser_z_min_value" value = "-1.0" />
+    <param name="laser_z_max_value" value = "1.0" />
+    
+    <!-- Advertising config --> 
+    <param name="advertise_map_service" value="true"/>
+    
+    <param name="scan_subscriber_queue_size" value="5"/>
+    <param name="scan_topic" value="/scan_filtered"/>
+    
+    <!-- Debug parameters -->
+    <!--
+      <param name="output_timing" value="false"/>
+      <param name="pub_drawings" value="true"/>
+      <param name="pub_debug_output" value="true"/>
+    -->
+    <param name="tf_map_scanmatch_transform_frame_name" value="scanmatcher_frame" />
+  </node>
+    <!-- Start Pose Saver node -->
+    <node name="pose_saver" pkg="pose_saver_pkg" type="pose_saver.py" output="screen">
+        <param name="output_path" value="/workspaces/Bachelor/RosWorkspace/Outputs/Speckle/output_os0.txt"/>
+    </node>
+
+    <node pkg="rviz" type="rviz" name="rviz"
+        args="-d $(find hector_slam_launch)/rviz_cfg/mapping_demo.rviz"/>
+</launch>

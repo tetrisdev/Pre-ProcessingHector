@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<robot name="sensor_suit"> 
+  <link name="os_sensor" />
+  <link name="os1_sensor" />
+  <link name="velodyne" />
+  <link name="opti_markers"/>
+
+    <link name="map"/>
+
+  <joint name="map_to_opti" type="fixed">
+    <parent link="map"/>
+    <child link="opti_markers"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </joint>
+
+  <joint name="joint1" type="fixed">
+    <parent link="opti_markers"/>
+    <child link="os_sensor"/>
+    <origin rpy="0 0 0.785" xyz="0.3 -0.58 -0.24"/>
+  </joint>
+ 
+  <joint name="joint2" type="fixed">
+    <parent link="opti_markers"/>
+    <child link="os1_sensor"/>
+    <origin rpy="0 0 -0.785" xyz="0.3 0.0 -0.24"/> 
+  </joint>
+ 
+  <joint name="joint3" type="fixed">
+    <parent link="opti_markers"/>
+    <child link="velodyne"/>
+    <origin rpy="0 0 0" xyz="0.03 -0.47 -0.16"/>
+  </joint>
+</robot>  

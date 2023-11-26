@@ -1,0 +1,8 @@
+build
+install
+log
+roslogs
+sanitizer_report.csv
+test_results.xml
+*.bag
+*.Identifier

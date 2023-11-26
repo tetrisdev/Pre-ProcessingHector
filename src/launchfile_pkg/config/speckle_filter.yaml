@@ -1,0 +1,8 @@
+scan_filter_chain:
+  - name: "speckle"
+    type: "laser_filters/LaserScanSpeckleFilter"
+    params:
+      filter_type: 1  # Options: "radius", "distance"
+      max_range: 50.0        # Maximum range to take into consiferation
+      max_range_difference: 0.2    # Radius in which to search for neighbors
+      filter_window: 3      # Minimum number of neighbors to not be considered speckle

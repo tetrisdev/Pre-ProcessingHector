@@ -1,0 +1,7 @@
+<launch>
+    <!-- Start Pose Saver node -->
+    <param name="/use_sim_time" value="true"/>
+    <node name="pose_saver" pkg="pose_saver_pkg" type="pose_saver.py" output="screen">
+        <param name="output_path" value="/workspaces/Bachelor/RosWorkspace/Outputs/GroundTruth/indoor06.txt"/>
+    </node>
+</launch>
